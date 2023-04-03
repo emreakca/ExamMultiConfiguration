@@ -1,7 +1,7 @@
 package at.tugraz.ist.ase.model;
 
 public class Requirement {
-    String lhs;
+    Requirement lhs;
     String operator;
-    String rhs;
+    Requirement rhs;
 }
