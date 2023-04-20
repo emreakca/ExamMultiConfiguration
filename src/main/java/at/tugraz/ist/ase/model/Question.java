@@ -1,27 +1,30 @@
 package at.tugraz.ist.ase.model;
 
 public class Question {
-    private Integer number;
 
-    private Integer type;
+  private Long id;
 
-    private Integer level;
+  private Integer type;
 
-    public Question(Integer number, Integer type, Integer level) {
-        this.number = number;
-        this.type = type;
-        this.level = level;
-    }
+  private Integer level;
 
-    public Integer getNumber() {
-        return number;
-    }
+  public Question() {}
 
-    public Integer getType() {
-        return type;
-    }
+  public Question(Long id, Integer type, Integer level) {
+    this.id = id;
+    this.type = type;
+    this.level = level;
+  }
 
-    public Integer getLevel() {
-        return level;
-    }
+  public Long getId() {
+    return id;
+  }
+
+  public Integer getType() {
+    return type;
+  }
+
+  public Integer getLevel() {
+    return level;
+  }
 }

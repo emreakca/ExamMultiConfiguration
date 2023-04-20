@@ -1,93 +1,78 @@
 package at.tugraz.ist.ase.model;
 
-import org.chocosolver.solver.Model;
-import org.chocosolver.solver.constraints.Constraint;
-import org.chocosolver.solver.variables.IntVar;
-import org.chocosolver.solver.variables.SetVar;
-
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
+import org.optaplanner.core.api.domain.solution.PlanningScore;
+import org.optaplanner.core.api.domain.solution.PlanningSolution;
+import org.optaplanner.core.api.domain.solution.ProblemFactCollectionProperty;
+import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
+import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 
 /** MultiConfigurationTask */
+@PlanningSolution
 public class MultiConfigurationTask {
-  // Input
-  private final List<Question> questions;
-  private final List<Integer> examineeIds;
+  /** Number of examinees */
+  @ValueRangeProvider @ProblemFactCollectionProperty private List<Integer> k;
 
-  // Output
+  @ValueRangeProvider @ProblemFactCollectionProperty private List<Question> q;
+
   /**
    * V consists of q_ij Whereas q_ij is a question j posed to examinee i Each question has a level
    * and a complexity
    */
-  private Map<Integer, List<Question>> V;
+  @PlanningEntityCollectionProperty private List<Exam> V;
 
-  /** D consists of dom(q_11)..dom(q_kl) Whereas q_ij is a question j posed to examinee i */
+  /** D consists of dom(q_11)..dom(q_kl) Whereas q_ij is a question j posed to examinee i /* */
+  /*
+  @ValueRangeProvider
+  @ProblemFactCollectionProperty
   private Map<Integer, List<QuestionDomain>> D;
 
   private Set<Requirement> REQ;
 
   private Set<Constraint> C;
+  */
+
+  @PlanningScore private HardSoftScore score;
+
+  public MultiConfigurationTask() {}
 
   public MultiConfigurationTask(
-      List<Question> questions,
-      List<Integer> examineeIds,
-      Set<Requirement> REQ,
-      Set<Constraint> C) {
-    this.questions = questions;
-    this.examineeIds = examineeIds;
-    this.REQ = REQ;
-    this.C = C;
+      List<Integer> k, List<Question> q, List<Exam> v) {
+    this.k = k;
+    this.q = q;
+    this.V = v;
   }
 
-  public Map<Integer, List<Question>> createExams() {
-    Model model = new Model("Multi Exam Configuration");
-
-    int[] questionNumbers = new int[questions.size()];
-    int[] questionTypes = new int[questions.size()];
-    int[] questionLevel = new int[questions.size()];
-    initializeArrays(questionNumbers, questionTypes, questionLevel);
-
-    SetVar varQuestionNumbers = model.setVar("Question Number", questionNumbers);
-    SetVar varQuestionTypes = model.setVar("Question Type", questionTypes);
-    SetVar varQuestionLevels = model.setVar("Question Level", questionLevel);
-    SetVar varExamineeIds =
-        model.setVar("Examinee Ids", examineeIds.stream().mapToInt(Integer::intValue).toArray());
-
-    return null;
+  public List<Integer> getK() {
+    return k;
   }
 
-  private void initializeArrays(int[] questionNumbers, int[] questionTypes, int[] questionLevel) {
-    int i = 0;
-    for (var q : questions) {
-      questionNumbers[i] = q.getNumber();
-      questionTypes[i] = q.getType();
-      questionLevel[i] = q.getLevel();
-      i++;
-    }
+  public void setK(List<Integer> k) {
+    this.k = k;
   }
 
-  public List<Question> getQuestions() {
-    return questions;
-  }
-
-  public List<Integer> getExamineeIds() {
-    return examineeIds;
-  }
-
-  public Map<Integer, List<Question>> getV() {
+  public List<Exam> getV() {
     return V;
   }
 
-  public Map<Integer, List<QuestionDomain>> getD() {
-    return D;
+  public void setV(List<Exam> v) {
+    V = v;
   }
 
-  public Set<Requirement> getREQ() {
-    return REQ;
+  public List<Question> getQ() {
+    return q;
   }
 
-  public Set<Constraint> getC() {
-    return C;
+  public void setQ(List<Question> q) {
+    this.q = q;
+  }
+
+  public HardSoftScore getScore() {
+    return score;
+  }
+
+  public void setScore(HardSoftScore score) {
+    this.score = score;
   }
 }
