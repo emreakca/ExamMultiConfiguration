@@ -70,7 +70,7 @@ public class Main {
     var random = new Random();
     List<Exam> exams = new ArrayList<>();
     List<Question> questions = new ArrayList<>();
-    List<List<Question>> q = new ArrayList<>();
+    List<Integer> q = new ArrayList<>();
 
     List<Integer> k =
         new ArrayList<>() {
@@ -86,8 +86,14 @@ public class Main {
 
     long id = 1;
     for (int i = 1; i <= 2; i++) {
-      for (int j = 0; j < questions.size(); j++) {
-        exams.add(new Exam(id++, i, questions.get(j)));
+      for(Question question: questions){
+        exams.add(new Exam(id++, i, question));
+      }
+    }
+
+    for (int i = 1; i <= 2; i++) {
+      for(Question question: questions){
+        exams.add(new Exam(id++, i, question));
       }
     }
 
