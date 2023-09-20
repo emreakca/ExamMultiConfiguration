@@ -1,26 +1,34 @@
 package at.tugraz.ist.ase.model;
 
 import java.util.List;
-import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
-import org.optaplanner.core.api.domain.solution.PlanningScore;
-import org.optaplanner.core.api.domain.solution.PlanningSolution;
-import org.optaplanner.core.api.domain.solution.ProblemFactCollectionProperty;
-import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
-import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
+import com.google.ortools.Loader;
+import com.google.ortools.linearsolver.MPConstraint;
+import com.google.ortools.linearsolver.MPObjective;
+import com.google.ortools.linearsolver.MPSolver;
+import com.google.ortools.linearsolver.MPVariable;
+import com.google.ortools.sat.CpModel;
+import com.google.ortools.sat.CpSolver;
+import com.google.ortools.sat.CpSolverStatus;
+import com.google.ortools.sat.IntVar;
+import com.google.ortools.sat.Literal;
 
 /** MultiConfigurationTask */
-@PlanningSolution
 public class MultiConfigurationTask {
-  /** Number of examinees */
-  @ValueRangeProvider @ProblemFactCollectionProperty private List<Integer> k;
+  private final int numberOfExaminees;
+  private final int numberOfQuestionsPerExaminee;
+  private final int numberOfTotalQuestions;
+  private final int[][] questions;
 
-  @ValueRangeProvider @ProblemFactCollectionProperty private List<Question> q;
+  /** Number of examinees */
+  private List<Integer> k;
+
+  private List<Question> q;
 
   /**
    * V consists of q_ij Whereas q_ij is a question j posed to examinee i Each question has a level
    * and a complexity
    */
-  @PlanningEntityCollectionProperty private List<Exam> V;
+  private List<Exam> V;
 
   /** D consists of dom(q_11)..dom(q_kl) Whereas q_ij is a question j posed to examinee i /* */
   /*
@@ -33,15 +41,42 @@ public class MultiConfigurationTask {
   private Set<Constraint> C;
   */
 
-  @PlanningScore private HardSoftScore score;
+  public MultiConfigurationTask(int numberOfExaminees, int numberOfQuestionsPerExaminee, int numberOfTotalQuestions, int[][] questions) {
+    this.numberOfExaminees = numberOfExaminees;
+    this.numberOfQuestionsPerExaminee = numberOfQuestionsPerExaminee;
+    this.numberOfTotalQuestions = numberOfTotalQuestions;
+    this.questions = questions;
+  }
 
-  public MultiConfigurationTask() {}
+  public long[][] solve() {
+    Loader.loadNativeLibraries();
 
-  public MultiConfigurationTask(
-      List<Integer> k, List<Question> q, List<Exam> v) {
-    this.k = k;
-    this.q = q;
-    this.V = v;
+    long[][] exams = new long[numberOfExaminees][numberOfQuestionsPerExaminee];
+
+    CpModel model = new CpModel();
+
+    IntVar[][] e = new IntVar[numberOfExaminees][numberOfQuestionsPerExaminee];
+    for (int i = 0; i < numberOfExaminees; i++) {
+      for (int j = 0; j < numberOfQuestionsPerExaminee; j++) {
+        e[i][j] = model.newIntVar(0, numberOfTotalQuestions, "Examinee[" + i + "] - Question[" + j + "]");
+      }
+      model.addAllDifferent(e[i]);
+    }
+
+    CpSolver solver = new CpSolver();
+    CpSolverStatus status = solver.solve(model);
+
+    if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
+      for (int i = 0; i < numberOfExaminees; i++) {
+        for (int j = 0; j < numberOfQuestionsPerExaminee; j++) {
+          exams[i][j] = solver.value(e[i][j]);
+        }
+      }
+    } else {
+      System.out.println("No solution found.");
+    }
+
+    return exams;
   }
 
   public List<Integer> getK() {
@@ -68,11 +103,4 @@ public class MultiConfigurationTask {
     this.q = q;
   }
 
-  public HardSoftScore getScore() {
-    return score;
-  }
-
-  public void setScore(HardSoftScore score) {
-    this.score = score;
-  }
 }

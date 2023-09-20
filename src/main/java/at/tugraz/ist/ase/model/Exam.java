@@ -1,27 +1,21 @@
 package at.tugraz.ist.ase.model;
 
-import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.lookup.PlanningId;
-import org.optaplanner.core.api.domain.variable.PlanningVariable;
+import java.util.List;
 
-@PlanningEntity
 public class Exam {
-  @PlanningId
   private Long id;
 
-  @PlanningVariable
   private Integer examinee;
 
-  @PlanningVariable
-  private Question question;
+  private List<Question> questions;
 
   public Exam() {
   }
 
-  public Exam(Long id, Integer examinee, Question question) {
+  public Exam(Long id, Integer examinee, List<Question> questions) {
     this.id = id;
     this.examinee = examinee;
-    this.question = question;
+    this.questions = questions;
   }
 
   public Long getId() {
@@ -36,11 +30,12 @@ public class Exam {
     this.examinee = examinee;
   }
 
-  public Question getQuestion() {
-    return question;
+  public List<Question> getQuestions() {
+    return questions;
   }
 
-  public void setQuestions(Question question) {
-    this.question = question;
+  public void setQuestions(List<Question> question) {
+    this.questions = question;
   }
+
 }
