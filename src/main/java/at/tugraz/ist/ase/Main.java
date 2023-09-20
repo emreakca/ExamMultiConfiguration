@@ -3,100 +3,64 @@ package at.tugraz.ist.ase;
 import at.tugraz.ist.ase.model.Exam;
 import at.tugraz.ist.ase.model.MultiConfigurationTask;
 import at.tugraz.ist.ase.model.Question;
-import at.tugraz.ist.ase.solver.ExamConstraintProvider;
-import java.time.Duration;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import org.optaplanner.core.api.solver.Solver;
-import org.optaplanner.core.api.solver.SolverFactory;
-import org.optaplanner.core.config.solver.SolverConfig;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.stream.Collectors.groupingBy;
 
 public class Main {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
   public static void main(String[] args) {
-    SolverFactory<MultiConfigurationTask> solverFactory =
-        SolverFactory.create(
-            new SolverConfig()
-                .withSolutionClass(MultiConfigurationTask.class)
-                .withEntityClasses(Exam.class)
-                .withConstraintProviderClass(ExamConstraintProvider.class)
-                // The solver runs only for 5 seconds on this small dataset.
-                // It's recommended to run for at least 5 minutes ("5m") otherwise.
-                .withTerminationSpentLimit(Duration.ofSeconds(5)));
 
     // Load the problem
     MultiConfigurationTask problem = generateDemoData();
 
-    // Solve the problem
-    Solver<MultiConfigurationTask> solver = solverFactory.buildSolver();
-    MultiConfigurationTask solution = solver.solve(problem);
+    var exams = problem.solve();
 
-    // Visualize the solution
-    printExams(solution);
-  }
-
-  private static void printExams(MultiConfigurationTask solution) {
-    var exams = solution.getV().stream().collect(groupingBy(Exam::getExaminee));
-
-    for (Integer examinee : exams.keySet()) {
-      System.out.println("Examinee " + examinee + ":");
-
-      for (Exam e : exams.get(examinee)) {
-        System.out.println("\tQuestion <" + e.getQuestion().getId() + ">");
-      }
-
-      System.out.println();
-    }
-
-    /*
-    for (Exam exam : solution.getV()) {
-      System.out.println("Examinee " + exam.getId() + ":");
-      for (Question q : exam.getQuestions()) {
-        System.out.println("\tQuestion <" + q.getId() + ">");
+    for (int i = 0; i < 2; i++) {
+      System.out.println("Examinee " + i);
+      for (int j = 0; j < 5; j++) {
+        System.out.println("\t" + exams[i][j]);
       }
       System.out.println();
     }
-     */
   }
 
   public static MultiConfigurationTask generateDemoData() {
-    var random = new Random();
-    List<Exam> exams = new ArrayList<>();
-    List<Question> questions = new ArrayList<>();
-    List<Integer> q = new ArrayList<>();
+    int numberOfExaminees = 2;
+    int numberOfQuestionsPerExaminee = 5;
+    int numberOfTotalQuestions = 10;
 
-    List<Integer> k =
-        new ArrayList<>() {
-          {
-            add(1);
-            add(2);
-          }
-        };
+    // id, type, level
+    int[][] questions = {
+      {1, 1, 1},
+      {2, 1, 1},
+      {3, 1, 2},
+      {4, 1, 2},
+      {5, 2, 1},
+      {6, 2, 1},
+      {7, 2, 3},
+      {8, 2, 4},
+      {9, 3, 1},
+      {10, 3, 1},
+      {11, 3, 1},
+      {12, 3, 2},
+      {13, 4, 5},
+      {14, 4, 4},
+      {15, 4, 3},
+      {16, 4, 4},
+      {17, 5, 1},
+      {18, 5, 1},
+      {19, 5, 1},
+      {20, 5, 1},
+    };
 
-    for (long i = 1; i <= 8; i++) {
-      questions.add(new Question(i, random.nextInt(4), random.nextInt(4)));
-    }
-
-    long id = 1;
-    for (int i = 1; i <= 2; i++) {
-      for(Question question: questions){
-        exams.add(new Exam(id++, i, question));
-      }
-    }
-
-    for (int i = 1; i <= 2; i++) {
-      for(Question question: questions){
-        exams.add(new Exam(id++, i, question));
-      }
-    }
-
-    return new MultiConfigurationTask(k, questions, exams);
+    return new MultiConfigurationTask(
+        numberOfExaminees, numberOfQuestionsPerExaminee, numberOfTotalQuestions, questions);
   }
 }
