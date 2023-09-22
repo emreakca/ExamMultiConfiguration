@@ -10,7 +10,7 @@ public class D {
   @Getter private int[][] dom_q_level;
 
   public int getQuestionUB() {
-    return 10;
+    return 7;
   }
 
   public int getQuestionLevelUB() {
@@ -22,7 +22,7 @@ public class D {
   }
 
   public int getNumberOfExaminees() {
-    return 1;
+    return 2;
   }
 
   public int getNumberOfQuestions() {

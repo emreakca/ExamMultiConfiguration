@@ -7,7 +7,9 @@ import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
+import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
+import org.jheaps.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,14 +49,38 @@ public class ExamMultiConfigurationModel {
     int x = 0;
     excludeQuestionVFromXExams(v, x);
 
+    // Constraint 5: Each exam contains question u or question v
+    int[] questionsToInclude = {6, 7};
+    includeQuestionsForEachExam(questionsToInclude);
+
     log.debug("\t<<< Model {} initialized", model.getName());
+  }
+
+  private void includeQuestionsForEachExam(int[] questionsToInclude) {
+    BoolVar[] isTargetValue = new BoolVar[D.getNumberOfExaminees() * D.getNumberOfQuestions()];
+
+    int targetIdx = 0;
+    for (int examineeIdx = 0; examineeIdx < D.getNumberOfExaminees(); examineeIdx++) {
+      for (int questionIdx = 0; questionIdx < D.getNumberOfQuestions(); questionIdx++) {
+        isTargetValue[targetIdx++] =
+            model
+                .or(
+                    model.arithm(
+                        V.getQuestion(examineeIdx, questionIdx), "=", questionsToInclude[0]),
+                    model.arithm(
+                        V.getQuestion(examineeIdx, questionIdx), "=", questionsToInclude[1]))
+                .reify();
+      }
+    }
+
+    model.or(isTargetValue).post();
   }
 
   private void excludeQuestionVFromXExams(int v, int x) {
     IntVar[] questions = new IntVar[D.getNumberOfExaminees() * D.getNumberOfQuestions()];
 
     int idx = 0;
-    for(int examineeIdx = 0; examineeIdx < D.getNumberOfExaminees(); examineeIdx++) {
+    for (int examineeIdx = 0; examineeIdx < D.getNumberOfExaminees(); examineeIdx++) {
       for (int questionIdx = 0; questionIdx < D.getNumberOfQuestions(); questionIdx++) {
         questions[idx++] = V.getQuestion(examineeIdx, questionIdx);
       }
@@ -109,6 +135,11 @@ public class ExamMultiConfigurationModel {
     return solver;
   }
 
+  @VisibleForTesting
+  public Solver getSolver() {
+    return model.getSolver();
+  }
+
   public List<Solution> solveAll() {
     var solutions = new ArrayList<Solution>();
     Solver solver = model.getSolver();
@@ -117,6 +148,7 @@ public class ExamMultiConfigurationModel {
       Solution sol = new Solution(model);
       sol.record();
       solutions.add(sol);
+      // V.print();
     }
 
     return solutions;
